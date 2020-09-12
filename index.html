@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Object Detection</title>
+</head>
+<style>
+    #img {
+        display: none;
+    }
+</style>
+
+<body>
+    <input type="file" onchange="readURL(this);" />
+    <canvas id="final" width="1000" height="1000"></canvas>
+    <img id="img" src="" />
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"> </script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<script>
+
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#img')
+                    .attr('src', e.target.result);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+
+            getImage(img)
+        }
+    }
+
+    function getImage(img) {
+        var canvas = document.getElementById("final")
+        console.log(img)
+        var ctx = canvas.getContext("2d");
+        img.onload = function () {
+            ctx.drawImage(img, 0, 0);
+        }
+        predict()
+    }
+
+    // predict()
+    function predict() {
+        const img = document.getElementById('img');
+
+        cocoSsd.load().then(model => {
+            model.detect(img).then(predictions => {
+                console.log(`Total Objects in the Image = ${predictions.length}`)
+                draw(predictions)
+            });
+        });
+    }
+
+    function draw(predictions) {
+        var c = document.getElementById("final");
+        // c.width = image.width
+        // c.height = image.height
+        var ctx = c.getContext('2d')
+        // ctx.drawImage(image, 0, 0);
+        ctx.strokeStyle = 'lightgreen';
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "lightgreen"
+        ctx.lineWidth = 3;
+        predictions.forEach((pred) => {
+            coords = pred.bbox
+            ctx.fillText(pred.class, coords[0], coords[1])
+            ctx.strokeRect(coords[0], coords[1], coords[2], coords[3]);
+        })
+        // var i = new Image(image);
+
+        // i.onload = function() {
+        //     ctx.drawImage(i, 0, 0);
+        // }
+        // var im = new Image();
+        // im.src = 'test2.jpeg'
+
+        // console.log(image, i,im)
+        // im.onload = function(){
+    }
+        //     ctx.strokeStyle = 'lightgreen';
+        //     ctx.font = "20px Arial";
+        //     ctx.fillStyle = "lightgreen"
+        //     ctx.lineWidth = 3;
+        //     predictions.forEach((pred) => {
+        //         coords = pred.bbox
+        //         ctx.fillText(pred.class, coords[0], coords[1])
+        //         ctx.strokeRect(coords[0],coords[1],coords[2],coords[3]);
+        //     })
+        // }
+        // }
+</script>
+
+</html>
