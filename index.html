@@ -38,7 +38,6 @@
 
     function getImage(img) {
         var canvas = document.getElementById("final")
-        console.log(img)
         var ctx = canvas.getContext("2d");
         img.onload = function () {
             ctx.drawImage(img, 0, 0);
@@ -51,8 +50,10 @@
         const img = document.getElementById('img');
 
         cocoSsd.load().then(model => {
+            console.time('Prediction Time')
             model.detect(img).then(predictions => {
-                console.log(`Total Objects in the Image = ${predictions.length}`)
+            console.timeEnd('Prediction Time')
+            console.log(`Total Objects in the Image = ${predictions.length}`)
                 draw(predictions)
             });
         });
