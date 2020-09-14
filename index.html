@@ -8,11 +8,19 @@
     #img {
         display: none;
     }
+    input{
+        margin-top: 20px;
+        padding: 20px;
+    }
+
+    #final{
+        margin: 50px;
+    }
 </style>
 
 <body>
-    <input type="file" onchange="readURL(this);" />
-    <canvas id="final" width="1000" height="1000"></canvas>
+    <input type="file" onchange="readURL(this);" /><br>
+    <canvas id="final" style="border: 2px solid black"></canvas>
     <img id="img" src="" />
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"> </script>
@@ -24,78 +32,61 @@
     function readURL(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-
+            var src = ""
             reader.onload = function (e) {
                 $('#img')
                     .attr('src', e.target.result);
+                    var im = new Image()
+                    im.src = e.target.result
+                    im.onload = function () { 
+                        predict(im) 
+                        }
             };
 
             reader.readAsDataURL(input.files[0]);
-
-            getImage(img)
         }
     }
 
-    function getImage(img) {
-        var canvas = document.getElementById("final")
-        var ctx = canvas.getContext("2d");
-        img.onload = function () {
-            ctx.drawImage(img, 0, 0);
-        }
-        predict()
-    }
-
-    // predict()
-    function predict() {
-        const img = document.getElementById('img');
-
+    function predict(im) {
         cocoSsd.load().then(model => {
             console.time('Prediction Time')
-            model.detect(img).then(predictions => {
+            model.detect(im).then(predictions => {
             console.timeEnd('Prediction Time')
             console.log(`Total Objects in the Image = ${predictions.length}`)
-                draw(predictions)
+                draw(predictions, im)
             });
         });
     }
 
-    function draw(predictions) {
+    function ratio(h, w, coords) {
+        wb = coords[2]
+        hb = coords[3]
+        let area = wb * hb
+        let ratio = (area/(h*w)) * 100
+
+        return Math.round(ratio*100)/100
+    }
+
+    function draw(predictions, im) {
         var c = document.getElementById("final");
-        // c.width = image.width
-        // c.height = image.height
+        c.width = im.width
+        c.height = im.height
         var ctx = c.getContext('2d')
-        // ctx.drawImage(image, 0, 0);
+        ctx.clearRect(0,0, c.width, c.height)
+        ctx.drawImage(im, 0, 0);
         ctx.strokeStyle = 'lightgreen';
         ctx.font = "20px Arial";
         ctx.fillStyle = "lightgreen"
         ctx.lineWidth = 3;
+        var i = 1;
         predictions.forEach((pred) => {
             coords = pred.bbox
-            ctx.fillText(pred.class, coords[0], coords[1])
+            console.log(`Object${i} = ${ratio(im.height, im.width, coords)}%`)
+            ctx.fillText("Object"+i, coords[0], coords[1])
+            ++i;
             ctx.strokeRect(coords[0], coords[1], coords[2], coords[3]);
         })
-        // var i = new Image(image);
-
-        // i.onload = function() {
-        //     ctx.drawImage(i, 0, 0);
-        // }
-        // var im = new Image();
-        // im.src = 'test2.jpeg'
-
-        // console.log(image, i,im)
-        // im.onload = function(){
     }
-        //     ctx.strokeStyle = 'lightgreen';
-        //     ctx.font = "20px Arial";
-        //     ctx.fillStyle = "lightgreen"
-        //     ctx.lineWidth = 3;
-        //     predictions.forEach((pred) => {
-        //         coords = pred.bbox
-        //         ctx.fillText(pred.class, coords[0], coords[1])
-        //         ctx.strokeRect(coords[0],coords[1],coords[2],coords[3]);
-        //     })
-        // }
-        // }
 </script>
 
 </html>
