@@ -49,6 +49,8 @@
 
     function predict(im) {
         cocoSsd.load().then(model => {
+            im.width = (im.width*500)/im.height
+            im.height = 500;            
             console.time('Prediction Time')
             model.detect(im).then(predictions => {
             console.timeEnd('Prediction Time')
@@ -69,11 +71,11 @@
 
     function draw(predictions, im) {
         var c = document.getElementById("final");
-        c.width = im.width
-        c.height = im.height
+        c.width = (im.width*500)/im.height
+        c.height = 500
         var ctx = c.getContext('2d')
         ctx.clearRect(0,0, c.width, c.height)
-        ctx.drawImage(im, 0, 0);
+        ctx.drawImage(im, 0, 0, (im.width*500)/im.height, 500);
         ctx.strokeStyle = 'lightgreen';
         ctx.font = "20px Arial";
         ctx.fillStyle = "lightgreen"
